@@ -1,0 +1,95 @@
+//
+//  ContentView.swift
+//  FloatingTextFieldSwiftUI
+//
+//  Created by Rashid Latif on 21/08/2024.
+//
+
+import SwiftUI
+
+struct ContentView: View {
+    @State var password:String = ""
+    @State var isPasswordHidden = false
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                FloatingTextFieldSwiftUI(placeholder: "Enter password", text: $password)
+                    .padding(.horizontal, 15)
+            }
+            
+        }
+    }
+}
+
+#Preview {
+    ContentView()
+}
+
+
+struct FloatingTextFieldSwiftUI:View {
+    
+    var placeholder: String
+    var isSecureField:Bool = true
+    @Binding var text: String
+    var accentColor:Color = .green
+    
+    @State private var showEye: Bool = true
+    @FocusState var isTextFieldFocused: Bool
+    
+    var isPlaceholderActive: Bool {
+        text.count != 0
+    }
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 4){
+            ZStack{
+                if isSecureField && showEye {
+                    SecureField("", text: $text)
+                        .focused($isTextFieldFocused)
+                }else {
+                    TextField("", text: $text)
+                        .focused($isTextFieldFocused)
+                }
+            }
+            .accentColor(self.accentColor)
+            .padding(.top, isPlaceholderActive ? 12 : 0)
+            .animation(.snappy(duration: 0.15), value: isPlaceholderActive)
+            
+            .background(
+                Text(placeholder)
+                    .offset(y: isPlaceholderActive ? -12 : 0)
+                    .foregroundStyle(.gray)
+                    .font(.system(size: isPlaceholderActive ? 10 : 15))
+                    .animation(.snappy(duration: 0.15), value: isPlaceholderActive)
+                , alignment: .leading
+            )
+            
+            if isSecureField  {
+                Button {
+                    withAnimation(.none) {
+                        showEye.toggle()
+                    }
+                    
+                } label: {
+                    withAnimation {
+                        Image(systemName: showEye ? "eye.slash" : "eye")
+                            .foregroundColor(.gray)
+                            .frame(width: 30, height: 30)
+                    }
+                }
+            }
+        }
+        
+        .onTapGesture {
+            isTextFieldFocused.toggle()
+        }
+        
+        .frame(minHeight: 50)
+        .padding(.horizontal, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(.gray, style: StrokeStyle(lineWidth: 0.5))
+        )
+    }
+}
